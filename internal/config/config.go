@@ -9,21 +9,18 @@ import (
 	"strings"
 )
 
-// Константы для значений по умолчанию
 const (
 	DefaultHost     = "localhost"
 	DefaultUser     = "root"
-	DefaultPassword = "" // Пустой пароль по умолчанию для безопасности
+	DefaultPassword = ""
 	DefaultPort     = 8080
 
-	// Порты БД по умолчанию
 	DefaultPostgresPort = "5432"
 	DefaultMySQLPort    = "3306"
 	DefaultMSSQLPort    = "1433"
-	DefaultSQLitePort   = "5432" // SQLite не использует порт, но для совместимости
+	DefaultSQLitePort   = "5432"
 )
 
-// Типы БД
 const (
 	DBTypePostgres = "postgres"
 	DBTypeMySQL    = "mysql"
@@ -31,12 +28,10 @@ const (
 	DBTypeMSSQL    = "mssql"
 )
 
-// ConfigReader интерфейс для чтения конфигурации
 type ConfigReader interface {
 	ReadConfig() (*Config, error)
 }
 
-// ConfigValidator интерфейс для валидации конфигурации
 type ConfigValidator interface {
 	Validate(cfg *Config) error
 }
@@ -51,13 +46,11 @@ type Config struct {
 	Port   int
 }
 
-// Validate проверяет корректность конфигурации
 func (c *Config) Validate() error {
 	if c.DBType == "" {
 		return errors.New("database type is required")
 	}
 
-	// Проверяем поддерживаемые типы БД
 	switch c.DBType {
 	case DBTypePostgres, DBTypeMySQL, DBTypeSQLite, DBTypeMSSQL:
 		// OK
@@ -73,7 +66,6 @@ func (c *Config) Validate() error {
 		return errors.New("database port is required")
 	}
 
-	// Валидируем порт БД
 	if port, err := strconv.Atoi(c.DBPort); err != nil || port <= 0 || port > 65535 {
 		return fmt.Errorf("invalid database port: %s. Port must be between 1 and 65535", c.DBPort)
 	}
@@ -93,19 +85,16 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-// InteractiveConfigReader реализует ConfigReader для интерактивного ввода
 type InteractiveConfigReader struct {
 	reader *bufio.Reader
 }
 
-// NewInteractiveConfigReader создает новый интерактивный читатель конфигурации
 func NewInteractiveConfigReader() *InteractiveConfigReader {
 	return &InteractiveConfigReader{
 		reader: bufio.NewReader(os.Stdin),
 	}
 }
 
-// readInput безопасно читает ввод пользователя
 func (r *InteractiveConfigReader) readInput(prompt string) (string, error) {
 	fmt.Print(prompt)
 	input, err := r.reader.ReadString('\n')
@@ -115,7 +104,6 @@ func (r *InteractiveConfigReader) readInput(prompt string) (string, error) {
 	return strings.TrimSpace(input), nil
 }
 
-// getDefaultPort возвращает порт по умолчанию для типа БД
 func getDefaultPort(dbType string) string {
 	switch dbType {
 	case DBTypePostgres:
@@ -131,7 +119,6 @@ func getDefaultPort(dbType string) string {
 	}
 }
 
-// parseDBType преобразует строку в тип БД
 func parseDBType(input string) (string, error) {
 	switch input {
 	case "1":
@@ -147,11 +134,9 @@ func parseDBType(input string) (string, error) {
 	}
 }
 
-// ReadConfig реализует ConfigReader для интерактивного ввода
 func (r *InteractiveConfigReader) ReadConfig() (*Config, error) {
 	cfg := &Config{}
 
-	// Выбор типа БД
 	dbTypeInput, err := r.readInput("Select DB type (1: PostgreSQL, 2: MySQL, 3: SQLite, 4: MSSQL): ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read DB type: %w", err)
@@ -162,7 +147,6 @@ func (r *InteractiveConfigReader) ReadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	// Хост БД
 	dbHost, err := r.readInput("Select DB host [localhost]: ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read DB host: %w", err)
@@ -174,7 +158,6 @@ func (r *InteractiveConfigReader) ReadConfig() (*Config, error) {
 		cfg.DBHost = dbHost
 	}
 
-	// Порт БД
 	dbPort, err := r.readInput("Select DB port: ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read DB port: %w", err)
@@ -183,14 +166,12 @@ func (r *InteractiveConfigReader) ReadConfig() (*Config, error) {
 	if dbPort == "" {
 		cfg.DBPort = getDefaultPort(cfg.DBType)
 	} else {
-		// Валидируем порт
 		if port, err := strconv.Atoi(dbPort); err != nil || port <= 0 || port > 65535 {
 			return nil, fmt.Errorf("invalid port number: %s. Port must be between 1 and 65535", dbPort)
 		}
 		cfg.DBPort = dbPort
 	}
 
-	// Пользователь БД
 	dbUser, err := r.readInput("Select DB user: ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read DB user: %w", err)
@@ -202,21 +183,18 @@ func (r *InteractiveConfigReader) ReadConfig() (*Config, error) {
 		cfg.DBUser = dbUser
 	}
 
-	// Пароль БД
 	dbPassword, err := r.readInput("Select DB password: ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read DB password: %w", err)
 	}
-	cfg.DBPass = dbPassword // Не устанавливаем значение по умолчанию для безопасности
+	cfg.DBPass = dbPassword
 
-	// Имя БД
 	dbName, err := r.readInput("Select DB name: ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read DB name: %w", err)
 	}
 	cfg.DBName = dbName
 
-	// Порт сервиса
 	servicePort, err := r.readInput("Select service port [8080]: ")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read service port: %w", err)
@@ -232,7 +210,6 @@ func (r *InteractiveConfigReader) ReadConfig() (*Config, error) {
 		cfg.Port = port
 	}
 
-	// Валидируем конфигурацию
 	if err := cfg.Validate(); err != nil {
 		return nil, fmt.Errorf("configuration validation failed: %w", err)
 	}
@@ -240,13 +217,11 @@ func (r *InteractiveConfigReader) ReadConfig() (*Config, error) {
 	return cfg, nil
 }
 
-// RunNewSetupWizard создает конфигурацию через интерактивный мастер (обратная совместимость)
 func RunNewSetupWizard() (*Config, error) {
 	reader := NewInteractiveConfigReader()
 	return reader.ReadConfig()
 }
 
-// NewConfigFromDefaults создает конфигурацию с значениями по умолчанию
 func NewConfigFromDefaults(dbType, dbName string) *Config {
 	return &Config{
 		DBType: dbType,
