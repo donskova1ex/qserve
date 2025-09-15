@@ -110,3 +110,19 @@ func (h *QueryHandler) HandleQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func (h *QueryHandler) HandleHealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if err := h.dbManager.Ping(r.Context()); err != nil {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		json.NewEncoder(w).Encode(QueryResponse{
+			Status: "error",
+			Error:  err.Error(),
+		})
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(QueryResponse{
+		Status: "ok",
+	})
+}
