@@ -89,11 +89,3 @@ func (c *ConnectionManager) Ping(ctx context.Context) error {
 	}
 	return c.db.PingContext(ctx)
 }
-
-func (c *ConnectionManager) GetDB() *sql.DB {
-	return c.db
-}
-
-func (c *ConnectionManager) GetDriver() string {
-	return c.driver
-}
