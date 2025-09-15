@@ -90,7 +90,7 @@ func (q *QueryValidator) GetQueryType(query string) string {
 	case "DELETE":
 		return "DELETE"
 	case "WITH":
-		// CTE (Common Table Expression) - обычно SELECT
+		// Додумать
 		return "SELECT"
 	default:
 		return "UNKNOWN"
