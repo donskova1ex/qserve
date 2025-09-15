@@ -87,8 +87,3 @@ func (q *QueryValidator) GetQueryType(query string) string {
 		return "UNKNOWN"
 	}
 }
-
-func (q *QueryValidator) IsReadOnlyQuery(query string) bool {
-	queryType := q.GetQueryType(query)
-	return queryType == "SELECT"
-}
