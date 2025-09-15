@@ -59,7 +59,6 @@ func (c *ConnectionManager) ExecuteQuery(ctx context.Context, query string) ([]m
 }
 
 func (c *ConnectionManager) ExecuteTransaction(ctx context.Context, query string) (int64, error) {
-
 	if c.db == nil {
 		return 0, fmt.Errorf("database not connected")
 	}

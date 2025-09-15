@@ -53,7 +53,6 @@ func (c *Config) Validate() error {
 
 	switch c.DBType {
 	case DBTypePostgres, DBTypeMySQL, DBTypeSQLite, DBTypeMSSQL:
-		// OK
 	default:
 		return fmt.Errorf("unsupported database type: %s", c.DBType)
 	}

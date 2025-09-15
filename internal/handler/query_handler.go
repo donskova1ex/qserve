@@ -108,7 +108,6 @@ func (h *QueryHandler) HandleQuery(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
 }
 
 func (h *QueryHandler) HandleHealthCheck(w http.ResponseWriter, r *http.Request) {
